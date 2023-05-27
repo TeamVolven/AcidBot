@@ -1,4 +1,4 @@
-import discord, sqlite3, datetime, math, asyncio, requests, aiohttp, random, json, pytz, os, dotenv, shutil
+import discord,asyncio,shutil
 from discord import app_commands
 import pytube as pt
 import spotipy
@@ -10,8 +10,7 @@ from discord.ext import commands, tasks
 from itertools import cycle
 # from discord.ui import Button, View
 
-dotenv.load_dotenv()
-DISCORD_TOKEN = os.getenv('DISCORD_TOKEN')
+DISCORD_TOKEN = 'token_here'
 
 interaction = discord.Interaction
 intents = discord.Intents.all()
@@ -20,12 +19,12 @@ intents.members = True
 client = commands.Bot(command_prefix="s!", intents=intents)
 
 bot_status = cycle([
-    "Programmed by: BoostieDev#5662"
+    "BoostieDev#5662"
 ])
 
 @tasks.loop(seconds=5)
 async def change_status():
-    await client.change_presence(activity=discord.Game(next(bot_status)))
+    await client.change_presence(activity=discord.Streaming(name=next(bot_status), url='https://www.youtube.com/watch?v=dQw4w9WgXcQ'))
 
 client.remove_command('help')
 
