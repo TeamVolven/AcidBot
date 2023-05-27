@@ -10,7 +10,7 @@ from discord.ext import commands, tasks
 from itertools import cycle
 # from discord.ui import Button, View
 
-DISCORD_TOKEN = 'token_here'
+DISCORD_TOKEN = 'token'
 
 interaction = discord.Interaction
 intents = discord.Intents.all()
@@ -40,16 +40,17 @@ async def on_ready():
         change_status.start()
         print(f"Sucessfully logged in as {client.user}")
 
-@client.tree.command(name = "connect", description = "connects to vc")
-async def first_command(interaction):
-    # Connects to the music VC on ID...
-    await interaction.response.send_message("📡 Connecting to the Music VC...")
-    voice_channel = client.get_channel(1111860931295715338) # replace ID with the Local Server Mucic ID VC
-    await voice_channel.connect() # VC connect.
+@client.tree.command(name="connect", description="Connects to a voice channel")
+async def connect_command(interaction):
     try:
+        channel = interaction.user.voice.channel
+        await interaction.response.send_message("📡 Connecting to the Music VC...")
+        await channel.connect()
         await interaction.edit_original_response(content="📞 Connected!!")
     except Exception as e:
         print(f"Error: {e}")
+        await interaction.response.send_message("❗ Failed to connect to a voice channel.")
+
 
 
 queue = []  # Queue to store the songs
@@ -57,6 +58,10 @@ ffmpeg_path = shutil.which("ffmpeg")
 
 @client.tree.command(name="play", description="Plays a song or playlist")
 async def play_command(interaction, link: str):
+    voice_client = discord.utils.get(client.voice_clients, guild=interaction.guild)
+
+    if not voice_client or not voice_client.is_connected():
+        await interaction.response.send_message("❗ Please use the `/connect` command to connect the bot to a voice channel.")
     embed = discord.Embed(title="Music Player", color=discord.Color.blue())
     embed.add_field(name="Status", value=f"📡 Attempting to load {link}...")
     await interaction.response.send_message(embed=embed)
