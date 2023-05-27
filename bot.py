@@ -41,22 +41,38 @@ async def on_ready():
 
 @client.tree.comamnd(name="help", description="")
 async def help_command(interaction):
-    embed = discord.Embed(title="Acid Help", description="Displays Music Commands...")
+    embed = discord.Embed(title="Acid Help", description="Displays Music Commands...", color=discord.Color.blue())
     embed.add_field(name="1#: /connect", value="Connects to the VC the `author` is in.")
-    embed.add_feild(name="1#: /play", value="")
+    embed.add_field(name="2#: /disconnect", value="Disconnect from the VC")
+    embed.add_feild(name="3#: /play", value="Plays a song or playlist")
+    embed.add_feild(name="4#: /stop", value="Stops the currently playing song")
+    embed.add_feild(name="5#: /pause", value="Pauses the currently playing song")
+    embed.add_feild(name="6#: /resume", value="Resumes the paused song")
+    embed.add_feild(name="7#: /skip", value="Skips the current song")
+    embed.add_feild(name="8#: /queue", value="Shows the current queue")
+    await interaction.response.send_message(embed=embed)
 
 @client.tree.command(name="connect", description="Connects to a voice channel")
 async def connect_command(interaction):
     try:
         channel = interaction.user.voice.channel
-        await interaction.response.send_message("📡 Connecting to the Music VC...")
+        await interaction.response.send_message("📡 Connecting to the VC...")
         await channel.connect()
         await interaction.edit_original_response(content="📞 Connected!!")
     except Exception as e:
         print(f"Error: {e}")
         await interaction.response.send_message("❗ Failed to connect to a voice channel.")
 
-
+@client.tree.command(name="disconnect", description="Disconnects from a voice channel")
+async def connect_command(interaction):
+    try:
+        channel = interaction.user.voice.channel
+        await interaction.response.send_message("📡 Disconnecting from the VC...")
+        await channel.disconnect()
+        await interaction.edit_original_response(content=">..Disconnected..<")
+    except Exception as e:
+        print(f"Error: {e}")
+        await interaction.response.send_message("❗ Failed to disconnect from a voice channel.")
 
 queue = []  # Queue to store the songs
 ffmpeg_path = shutil.which("ffmpeg")
