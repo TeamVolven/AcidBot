@@ -8,9 +8,8 @@ from discord import app_commands, utils
 from datetime import timedelta
 from discord.ext import commands, tasks
 from itertools import cycle
-# from discord.ui import Button, View
 
-DISCORD_TOKEN = 'token'
+DISCORD_TOKEN = 'import_token_here'
 
 interaction = discord.Interaction
 intents = discord.Intents.all()
@@ -39,6 +38,12 @@ async def on_ready():
 
         change_status.start()
         print(f"Sucessfully logged in as {client.user}")
+
+@client.tree.comamnd(name="help", description="")
+async def help_command(interaction):
+    embed = discord.Embed(title="Acid Help", description="Displays Music Commands...")
+    embed.add_field(name="1#: /connect", value="Connects to the VC the `author` is in.")
+    embed.add_feild(name="1#: /play", value="")
 
 @client.tree.command(name="connect", description="Connects to a voice channel")
 async def connect_command(interaction):
@@ -180,6 +185,8 @@ async def stop_command(interaction):
         voice_client.stop()
         await interaction.response.send_message("⏹️ Stopped the current song.")
         queue.clear()  # Clear the queue when stopping the song
+    else:
+	    await interaction.response.send_message("❗Sorry there is no song playing or I am not in a VC.")
 
 @client.tree.command(name="pause", description="Pauses the currently playing song")
 async def pause_command(interaction):
@@ -187,6 +194,8 @@ async def pause_command(interaction):
     if voice_client and voice_client.is_playing():
         voice_client.pause()
         await interaction.response.send_message("⏸️ Paused the current song.")
+    else:
+        await interaction.response.send_message("❗Sorry there is no song playing or I am not in a VC.")
 
 @client.tree.command(name="resume", description="Resumes the paused song")
 async def resume_command(interaction):
@@ -194,6 +203,8 @@ async def resume_command(interaction):
     if voice_client and voice_client.is_paused():
         voice_client.resume()
         await interaction.response.send_message("▶️ Resumed the song.")
+    else:
+        await interaction.response.send_message("❗Sorry there is no song playing or I am not in a VC.")
 
 @client.tree.command(name="skip", description="Skips the current song")
 async def skip_command(interaction):
@@ -214,6 +225,8 @@ async def skip_command(interaction):
             embed = discord.Embed(title="Music Player", color=discord.Color.blue())
             embed.add_field(name="Status", value=f"🎵 Now playing: {title}")
             await interaction.followup.send(embed=embed)
+    else:
+        await interaction.response.send_message("❗Sorry there is no song to skip or I am not in a VC.")
 
 @client.tree.command(name="queue", description="Shows the current queue")
 async def queue_command(interaction):
