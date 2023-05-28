@@ -17,7 +17,7 @@ This is a Discord music bot written in Python using the Discord.py library. The 
 1. Clone the repository or download the code files.
 2. Install the required dependencies by running the following command:
 3. pip install -r requirements.txt
-4. Replace the `DISCORD_TOKEN` placeholder in the code with your own Discord bot token. You can create a bot and obtain a token from the Discord Developer Portal.
+4. Replace the `import_token_here` placeholder in the code with your own Discord bot token. You can create a bot and obtain a token from the Discord Developer Portal.
 5. Make sure you have FFmpeg installed on your system. FFmpeg is required for audio streaming and can be downloaded from the official website: https://ffmpeg.org/download.html
 6. Run the bot by executing the following command: `python bot.py`
 
