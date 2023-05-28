@@ -23,7 +23,7 @@ This is a Discord music bot written in Python using the Discord.py library. The 
 
 ## Usage
 
-The bot uses the prefix `s!` for commands. Here are the available commands:
+The bot uses slash commands instead of prefix for commands. Here are the available commands:
 
 - `/connect` - Connects the bot to a voice channel.
 - `/disconnect` - Disconnects the bot from the voice channel.
