@@ -39,7 +39,7 @@ async def on_ready():
         change_status.start()
         print(f"Sucessfully logged in as {client.user}")
 
-@client.tree.comamnd(name="help", description="")
+@client.tree.comamnd(name="help", description="Displays Music Commands...")
 async def help_command(interaction):
     embed = discord.Embed(title="Acid Help", description="Displays Music Commands...", color=discord.Color.blue())
     embed.add_field(name="1#: /connect", value="Connects to the VC the `author` is in.")
