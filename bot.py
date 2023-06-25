@@ -3,7 +3,8 @@ from discord import app_commands
 import pytube as pt
 import spotipy
 from spotipy.oauth2 import SpotifyClientCredentials
-
+import shutil
+from collections import deque
 from discord import app_commands, utils
 from datetime import timedelta
 from discord.ext import commands, tasks
@@ -18,7 +19,7 @@ intents.members = True
 client = commands.Bot(command_prefix="s!", intents=intents)
 
 bot_status = cycle([
-    "BoostieDev#5662"
+    "Music"
 ])
 
 @tasks.loop(seconds=5)
@@ -42,8 +43,7 @@ async def on_ready():
 @client.tree.command(name="help", description="Displays Music Commands...")
 async def help_command(interaction):
     embed = discord.Embed(title="Acid Help", description="Displays Music Commands...", color=discord.Color.blue())
-    embed.add_field(name="1#: /connect", value="Connects to the VC the `author` is in.")
-    embed.add_field(name="2#: /disconnect", value="Disconnect from the VC")
+    embed.add_field(name="2#: /leave", value="Disconnect from the VC")
     embed.add_feild(name="3#: /play", value="Plays a song or playlist")
     embed.add_feild(name="4#: /stop", value="Stops the currently playing song")
     embed.add_feild(name="5#: /pause", value="Pauses the currently playing song")
@@ -52,18 +52,7 @@ async def help_command(interaction):
     embed.add_feild(name="8#: /queue", value="Shows the current queue")
     await interaction.response.send_message(embed=embed)
 
-@client.tree.command(name="connect", description="Connects to a voice channel")
-async def connect_command(interaction):
-    try:
-        channel = interaction.user.voice.channel
-        await interaction.response.send_message("📡 Connecting to the VC...")
-        await channel.connect()
-        await interaction.edit_original_response(content="📞 Connected!!")
-    except Exception as e:
-        print(f"Error: {e}")
-        await interaction.response.send_message("❗ Failed to connect to a voice channel.")
-
-@client.tree.command(name="disconnect", description="Disconnects from a voice channel")
+@client.tree.command(name="leave", description="Disconnects from a voice channel")
 async def connect_command(interaction):
     try:
         channel = interaction.user.voice.channel
@@ -74,26 +63,27 @@ async def connect_command(interaction):
         print(f"Error: {e}")
         await interaction.response.send_message("❗ Failed to disconnect from a voice channel.")
 
-queue = []  # Queue to store the songs
+queue = deque()  # Queue to store the songs
 ffmpeg_path = shutil.which("ffmpeg")
 
 @client.tree.command(name="play", description="Plays a song or playlist")
 async def play_command(interaction, link: str):
+    await interaction.response.defer()
     voice_client = discord.utils.get(client.voice_clients, guild=interaction.guild)
 
-    if not voice_client or not voice_client.is_connected():
-        await interaction.response.send_message("❗ Please use the `/connect` command to connect the bot to a voice channel.")
+    channel = interaction.user.voice.channel
+    await interaction.followup.send("📡 Connecting to the VC...")
+    await channel.connect()
+    await interaction.followup.send(content="📞 Connected!!")
+
     embed = discord.Embed(title="Music Player", color=discord.Color.blue())
     embed.add_field(name="Status", value=f"📡 Attempting to load {link}...")
-    await interaction.response.send_message(embed=embed)
+    await interaction.followup.send(embed=embed)
 
     try:
-        ffmpeg_path = shutil.which("ffmpeg")
         if ffmpeg_path is None:
             raise ValueError("FFmpeg executable not found.")
-        
-        voice_client = discord.utils.get(client.voice_clients, guild=interaction.guild)
-        
+
         if "youtube.com/playlist" in link:
             # If the link is a YouTube playlist, retrieve the individual video URLs and add them to the queue
             playlist = pt.Playlist(link)
@@ -101,10 +91,10 @@ async def play_command(interaction, link: str):
                 t = video.streams.filter(only_audio=True)
                 t[0].download()
                 queue.append((video.title, t[0].default_filename))
-            
-            if voice_client and (not voice_client.is_playing() and not voice_client.is_paused()):
+
+            if voice_client and not voice_client.is_playing() and not voice_client.is_paused():
                 # If the bot is in a voice channel and no song is currently playing or paused, play the first song from the playlist
-                title, filename = queue.pop(0)
+                title, filename = queue.popleft()
                 voice_client.play(discord.FFmpegPCMAudio(executable=ffmpeg_path, source=filename))
                 embed.set_field_at(0, name="Status", value=f"🎵 Now playing: {title}")
                 await interaction.edit_original_response(embed=embed)
@@ -116,7 +106,7 @@ async def play_command(interaction, link: str):
                 # If the bot is not in a voice channel, prompt the user to join a voice channel
                 embed.set_field_at(0, name="Status", value="❗ Please join a voice channel first.")
                 await interaction.edit_original_response(embed=embed)
-        
+
         elif "open.spotify.com/playlist" in link:
             # If the link is a Spotify playlist, retrieve the individual track URLs and add them to the queue
             sp = spotipy.Spotify(client_credentials_manager=SpotifyClientCredentials())
@@ -128,21 +118,22 @@ async def play_command(interaction, link: str):
                 title = f"{artists} - {track['name']}"
                 if 'preview_url' in track and track['preview_url'] is not None:
                     queue.append((title, track['preview_url']))
-            
-            if voice_client and (not voice_client.is_playing() and not voice_client.is_paused()):
+
+            if voice_client and not voice_client.is_playing() and not voice_client.is_paused():
                 # If the bot is in a voice channel and no song is currently playing or paused, play the first song from the playlist
-                title, url = queue.pop(0)
+                title, url = queue.popleft()
                 voice_client.play(discord.FFmpegPCMAudio(url))
                 embed.set_field_at(0, name="Status", value=f"🎵 Now playing: {title}")
-                await interaction.edit_original_response(embed=embed)
+                await interaction.followup.send(embed=embed)
             elif voice_client:
                 # If the bot is in a voice channel but a song is already playing or paused, add the songs from the playlist to the queue
                 embed.set_field_at(0, name="Status", value=f"🎵 Added playlist to the queue: {playlist['name']}")
-                await interaction.edit_original_response(embed=embed)
+                await interaction.followup.send(embed=embed)
             else:
                 # If the bot is not in a voice channel, prompt the user to join a voice channel
                 embed.set_field_at(0, name="Status", value="❗ Please join a voice channel first.")
-                await interaction.edit_original_response(embed=embed)
+                await interaction.followup.send(embed=embed)
+
         elif "open.spotify.com/track" in link:
             # If the link is a Spotify track, add it to the queue
             sp = spotipy.Spotify(client_credentials_manager=SpotifyClientCredentials())
@@ -152,10 +143,10 @@ async def play_command(interaction, link: str):
             title = f"{artists} - {track['name']}"
             if 'preview_url' in track and track['preview_url'] is not None:
                 queue.append((title, track['preview_url']))
-            
-            if voice_client and (not voice_client.is_playing() and not voice_client.is_paused()):
+
+            if voice_client and not voice_client.is_playing() and not voice_client.is_paused():
                 # If the bot is in a voice channel and no song is currently playing or paused, play the requested song immediately
-                title, url = queue.pop(0)
+                title, url = queue.popleft()
                 voice_client.play(discord.FFmpegPCMAudio(url))
                 embed.set_field_at(0, name="Status", value=f"🎵 Now playing: {title}")
                 await interaction.edit_original_response(embed=embed)
@@ -167,16 +158,16 @@ async def play_command(interaction, link: str):
                 # If the bot is not in a voice channel, prompt the user to join a voice channel
                 embed.set_field_at(0, name="Status", value="❗ Please join a voice channel first.")
                 await interaction.edit_original_response(embed=embed)
-        
+
         else:
             # If the link is a single song, add it to the queue
-            t = pt.YouTube(link).streams.filter(only_audio=True) 
+            t = pt.YouTube(link).streams.filter(only_audio=True)
             t[0].download()
             queue.append((link, t[0].default_filename))
-            
-            if voice_client and (not voice_client.is_playing() and not voice_client.is_paused()):
+
+            if voice_client and not voice_client.is_playing() and not voice_client.is_paused():
                 # If the bot is in a voice channel and no song is currently playing or paused, play the requested song immediately
-                title, filename = queue.pop(0)
+                title, filename = queue.popleft()
                 voice_client.play(discord.FFmpegPCMAudio(executable=ffmpeg_path, source=filename))
                 embed.set_field_at(0, name="Status", value=f"🎵 Now playing: {title}")
                 await interaction.edit_original_response(embed=embed)
@@ -188,7 +179,7 @@ async def play_command(interaction, link: str):
                 # If the bot is not in a voice channel, prompt the user to join a voice channel
                 embed.set_field_at(0, name="Status", value="❗ Please join a voice channel first.")
                 await interaction.edit_original_response(embed=embed)
-        
+
     except Exception as e:
         embed.set_field_at(0, name="Status", value=f"🛠 Error: {e}")
         print(f"Error: {e}")
