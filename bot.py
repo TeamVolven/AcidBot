@@ -1,6 +1,5 @@
 import discord,asyncio,shutil
 from discord import app_commands
-import pytube as pt
 import spotipy
 from spotipy.oauth2 import SpotifyClientCredentials
 import shutil
@@ -19,7 +18,8 @@ intents.members = True
 client = commands.Bot(command_prefix="s!", intents=intents)
 
 bot_status = cycle([
-    "Music"
+    "Music",
+    "Spotify Only"
 ])
 
 @tasks.loop(seconds=5)
@@ -84,30 +84,7 @@ async def play_command(interaction, link: str):
         if ffmpeg_path is None:
             raise ValueError("FFmpeg executable not found.")
 
-        if "youtube.com/playlist" in link:
-            # If the link is a YouTube playlist, retrieve the individual video URLs and add them to the queue
-            playlist = pt.Playlist(link)
-            for video in playlist.videos:
-                t = video.streams.filter(only_audio=True)
-                t[0].download()
-                queue.append((video.title, t[0].default_filename))
-
-            if voice_client and not voice_client.is_playing() and not voice_client.is_paused():
-                # If the bot is in a voice channel and no song is currently playing or paused, play the first song from the playlist
-                title, filename = queue.popleft()
-                voice_client.play(discord.FFmpegPCMAudio(executable=ffmpeg_path, source=filename))
-                embed.set_field_at(0, name="Status", value=f"🎵 Now playing: {title}")
-                await interaction.edit_original_response(embed=embed)
-            elif voice_client:
-                # If the bot is in a voice channel but a song is already playing or paused, add the songs from the playlist to the queue
-                embed.set_field_at(0, name="Status", value=f"🎵 Added playlist to the queue: {playlist.title}")
-                await interaction.edit_original_response(embed=embed)
-            else:
-                # If the bot is not in a voice channel, prompt the user to join a voice channel
-                embed.set_field_at(0, name="Status", value="❗ Please join a voice channel first.")
-                await interaction.edit_original_response(embed=embed)
-
-        elif "open.spotify.com/playlist" in link:
+        if "open.spotify.com/playlist" in link:
             # If the link is a Spotify playlist, retrieve the individual track URLs and add them to the queue
             sp = spotipy.Spotify(client_credentials_manager=SpotifyClientCredentials())
             playlist_id = link.split('/')[-1]
@@ -160,25 +137,8 @@ async def play_command(interaction, link: str):
                 await interaction.edit_original_response(embed=embed)
 
         else:
-            # If the link is a single song, add it to the queue
-            t = pt.YouTube(link).streams.filter(only_audio=True)
-            t[0].download()
-            queue.append((link, t[0].default_filename))
-
-            if voice_client and not voice_client.is_playing() and not voice_client.is_paused():
-                # If the bot is in a voice channel and no song is currently playing or paused, play the requested song immediately
-                title, filename = queue.popleft()
-                voice_client.play(discord.FFmpegPCMAudio(executable=ffmpeg_path, source=filename))
-                embed.set_field_at(0, name="Status", value=f"🎵 Now playing: {title}")
-                await interaction.edit_original_response(embed=embed)
-            elif voice_client:
-                # If the bot is in a voice channel but a song is already playing or paused, add the requested song to the queue
-                embed.set_field_at(0, name="Status", value=f"🎵 Added to the queue: {link}")
-                await interaction.edit_original_response(embed=embed)
-            else:
-                # If the bot is not in a voice channel, prompt the user to join a voice channel
-                embed.set_field_at(0, name="Status", value="❗ Please join a voice channel first.")
-                await interaction.edit_original_response(embed=embed)
+            embed.set_field_at(0, name="Status", value=f"❗ The link is not supported.")
+            await interaction.edit_original_response(embed=embed)
 
     except Exception as e:
         embed.set_field_at(0, name="Status", value=f"🛠 Error: {e}")
