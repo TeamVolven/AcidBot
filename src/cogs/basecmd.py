@@ -66,9 +66,7 @@ class BaseCMDs(commands.Cog):
             if queue:
                 # If there are songs in the queue, play the next song
                 title, source = queue.pop(0)
-                if "youtube.com" in source:
-                    voice_client.play(discord.FFmpegPCMAudio(executable=ffmpeg_path, source=source))
-                elif "spotify.com" in source:
+                if "spotify.com" in source:
                     sp = spotipy.Spotify(client_credentials_manager=SpotifyClientCredentials())
                     track = sp.track(source)
                     if 'preview_url' in track and track['preview_url'] is not None:
