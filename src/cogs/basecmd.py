@@ -75,6 +75,7 @@ class BaseCMDs(commands.Cog):
                         voice_client.play(discord.FFmpegPCMAudio(track['preview_url']))
                 embed = discord.Embed(title="Music Player", color=discord.Color.blue())
                 embed.add_field(name="Status", value=f"🎵 Now playing: {title}")
+                embed.set_footer(text="Developed by: WaterMeloDev", icon_url="https://cdn.discordapp.com/avatars/1119006375868104805/c72540b3fbb57b01ed126b0c58933688.png?size=4096")
                 await interaction.followup.send(embed=embed)
         else:
             await interaction.response.send_message("❗Sorry there is no song to skip or I am not in a VC.")
@@ -85,6 +86,8 @@ class BaseCMDs(commands.Cog):
             embed = discord.Embed(title="Music Player - Queue", color=discord.Color.blue())
             for i, (title, _) in enumerate(queue, start=1):
                 embed.add_field(name=f"#{i}", value=title, inline=False)
+            
+            embed.set_footer(text="Developed by: WaterMeloDev", icon_url="https://cdn.discordapp.com/avatars/1119006375868104805/c72540b3fbb57b01ed126b0c58933688.png?size=4096")
             await interaction.response.send_message(embed=embed)
         else:
             await interaction.response.send_message("📭 The queue is empty.")

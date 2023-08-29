@@ -20,6 +20,7 @@ class HelpCmd(commands.Cog):
         embed.add_feild(name="5#: /resume", value="Resumes the paused song")
         embed.add_feild(name="6#: /skip", value="Skips the current song")
         embed.add_feild(name="7#: /queue", value="Shows the current queue")
+        embed.set_footer(text="Developed by: WaterMeloDev", icon_url="https://cdn.discordapp.com/avatars/1119006375868104805/c72540b3fbb57b01ed126b0c58933688.png?size=4096")
         await interaction.response.send_message(embed=embed, ephemeral=True)
 
 async def setup(client):

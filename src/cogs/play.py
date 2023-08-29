@@ -24,12 +24,13 @@ class PlayCMD(commands.Cog):
         voice_client = discord.utils.get(self.client.voice_clients, guild=interaction.guild)
 
         channel = interaction.user.voice.channel
-        await interaction.followup.send("📡 Connecting to the VC...")
+        await interaction.followup.send("📡 Connecting to the VC")
         await channel.connect()
         await interaction.followup.send(content="📞 Connected!!")
 
         embed = discord.Embed(title="Music Player", color=discord.Color.blue())
         embed.add_field(name="Status", value=f"📡 Attempting to load {link}...")
+        embed.set_footer(text="Developed by: WaterMeloDev", icon_url="https://cdn.discordapp.com/avatars/1119006375868104805/c72540b3fbb57b01ed126b0c58933688.png?size=4096")
         await interaction.followup.send(embed=embed)
 
         try:
@@ -53,14 +54,17 @@ class PlayCMD(commands.Cog):
                     title, url = queue.popleft()
                     voice_client.play(discord.FFmpegPCMAudio(url))
                     embed.set_field_at(0, name="Status", value=f"🎵 Now playing: {title}")
+                    embed.set_footer(text="Developed by: WaterMeloDev", icon_url="https://cdn.discordapp.com/avatars/1119006375868104805/c72540b3fbb57b01ed126b0c58933688.png?size=4096")
                     await interaction.followup.send(embed=embed)
                 elif voice_client:
                     # If the bot is in a voice channel but a song is already playing or paused, add the songs from the playlist to the queue
                     embed.set_field_at(0, name="Status", value=f"🎵 Added playlist to the queue: {playlist['name']}")
+                    embed.set_footer(text="Developed by: WaterMeloDev", icon_url="https://cdn.discordapp.com/avatars/1119006375868104805/c72540b3fbb57b01ed126b0c58933688.png?size=4096")
                     await interaction.followup.send(embed=embed)
                 else:
                     # If the bot is not in a voice channel, prompt the user to join a voice channel
                     embed.set_field_at(0, name="Status", value="❗ Please join a voice channel first.")
+                    embed.set_footer(text="Developed by: WaterMeloDev", icon_url="https://cdn.discordapp.com/avatars/1119006375868104805/c72540b3fbb57b01ed126b0c58933688.png?size=4096")
                     await interaction.followup.send(embed=embed)
 
             elif "open.spotify.com/track" in link:
@@ -78,22 +82,27 @@ class PlayCMD(commands.Cog):
                     title, url = queue.popleft()
                     voice_client.play(discord.FFmpegPCMAudio(url))
                     embed.set_field_at(0, name="Status", value=f"🎵 Now playing: {title}")
+                    embed.set_footer(text="Developed by: WaterMeloDev", icon_url="https://cdn.discordapp.com/avatars/1119006375868104805/c72540b3fbb57b01ed126b0c58933688.png?size=4096")
                     await interaction.edit_original_response(embed=embed)
                 elif voice_client:
                     # If the bot is in a voice channel but a song is already playing or paused, add the requested song to the queue
                     embed.set_field_at(0, name="Status", value=f"🎵 Added to the queue: {link}")
+                    embed.set_footer(text="Developed by: WaterMeloDev", icon_url="https://cdn.discordapp.com/avatars/1119006375868104805/c72540b3fbb57b01ed126b0c58933688.png?size=4096")
                     await interaction.edit_original_response(embed=embed)
                 else:
                     # If the bot is not in a voice channel, prompt the user to join a voice channel
                     embed.set_field_at(0, name="Status", value="❗ Please join a voice channel first.")
+                    embed.set_footer(text="Developed by: WaterMeloDev", icon_url="https://cdn.discordapp.com/avatars/1119006375868104805/c72540b3fbb57b01ed126b0c58933688.png?size=4096")
                     await interaction.edit_original_response(embed=embed)
 
             else:
                 embed.set_field_at(0, name="Status", value=f"❗ The link is not supported.")
+                embed.set_footer(text="Developed by: WaterMeloDev", icon_url="https://cdn.discordapp.com/avatars/1119006375868104805/c72540b3fbb57b01ed126b0c58933688.png?size=4096")
                 await interaction.edit_original_response(embed=embed)
 
         except Exception as e:
             embed.set_field_at(0, name="Status", value=f"🛠 Error: {e}")
+            embed.set_footer(text="Developed by: WaterMeloDev", icon_url="https://cdn.discordapp.com/avatars/1119006375868104805/c72540b3fbb57b01ed126b0c58933688.png?size=4096")
             print(f"Error: {e}")
             await interaction.edit_original_response(embed=embed)
 
